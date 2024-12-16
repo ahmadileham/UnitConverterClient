@@ -7,40 +7,79 @@ import org.osgi.framework.ServiceReference;
 import com.converter.service.UnitConversionService;
 
 import java.util.Collection;
+import java.util.Scanner;
 
 public class Activator implements BundleActivator {
+    private Scanner scanner = new Scanner(System.in);
+
     @Override
     public void start(BundleContext context) throws Exception {
-        // Length conversion
-        Collection<ServiceReference<UnitConversionService>> lengthRefs = context.getServiceReferences(UnitConversionService.class, "(unitType=length)");
-        if (!lengthRefs.isEmpty()) {
-            ServiceReference<UnitConversionService> lengthRef = lengthRefs.iterator().next();
-            UnitConversionService lengthService = context.getService(lengthRef);
-            double lengthResult = lengthService.convert(1000, "meters", "kilometers");
-            System.out.println("1000 meters to kilometers: " + lengthResult);
-        }
+        System.out.println("Unit Conversion Application Started!");
+        boolean running = true;
 
-        // Weight conversion
-        Collection<ServiceReference<UnitConversionService>> weightRefs = context.getServiceReferences(UnitConversionService.class, "(unitType=weight)");
-        if (!weightRefs.isEmpty()) {
-            ServiceReference<UnitConversionService> weightRef = weightRefs.iterator().next();
-            UnitConversionService weightService = context.getService(weightRef);
-            double weightResult = weightService.convert(2, "kilograms", "pounds");
-            System.out.println("2 kilograms to pounds: " + weightResult);
-        }
+        while (running) {
+            // Display menu
+            System.out.println("\nChoose a conversion type:");
+            System.out.println("1. Length");
+            System.out.println("2. Weight");
+            System.out.println("3. Temperature");
+            System.out.println("q. Quit");
+            System.out.print("Enter your choice: ");
+            String choice = scanner.nextLine();
 
-        // Temperature conversion
-        Collection<ServiceReference<UnitConversionService>> tempRefs = context.getServiceReferences(UnitConversionService.class, "(unitType=temperature)");
-        if (!tempRefs.isEmpty()) {
-            ServiceReference<UnitConversionService> tempRef = tempRefs.iterator().next();
-            UnitConversionService tempService = context.getService(tempRef);
-            double tempResult = tempService.convert(25, "celsius", "fahrenheit");
-            System.out.println("25 Celsius to Fahrenheit: " + tempResult);
+            switch (choice) {
+                case "1":
+                    performConversion(context, "length");
+                    break;
+                case "2":
+                    performConversion(context, "weight");
+                    break;
+                case "3":
+                    performConversion(context, "temperature");
+                    break;
+                case "q":
+                    running = false;
+                    System.out.println("Exiting the application. Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private void performConversion(BundleContext context, String unitType) {
+        try {
+            Collection<ServiceReference<UnitConversionService>> serviceRefs =
+                    context.getServiceReferences(UnitConversionService.class, "(unitType=" + unitType + ")");
+            
+            if (serviceRefs == null || serviceRefs.isEmpty()) {
+                System.out.println("No converter available for " + unitType);
+                return;
+            }
+
+            ServiceReference<UnitConversionService> serviceRef = serviceRefs.iterator().next();
+            UnitConversionService converter = context.getService(serviceRef);
+
+            // Take user input for conversion
+            System.out.print("Enter the value to convert: ");
+            double value = Double.parseDouble(scanner.nextLine());
+            System.out.print("Enter the source unit: ");
+            String sourceUnit = scanner.nextLine();
+            System.out.print("Enter the target unit: ");
+            String targetUnit = scanner.nextLine();
+
+            // Perform conversion
+            double result = converter.convert(value, sourceUnit, targetUnit);
+            System.out.println(value + " " + sourceUnit + " = " + result + " " + targetUnit);
+
+        } catch (Exception e) {
+            System.out.println("Error during conversion: " + e.getMessage());
         }
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
         System.out.println("Client stopped");
+        scanner.close();
     }
 }
