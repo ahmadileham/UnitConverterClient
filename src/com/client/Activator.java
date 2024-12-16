@@ -6,11 +6,14 @@ import org.osgi.framework.ServiceReference;
 
 import com.converter.service.UnitConversionService;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Scanner;
 
 public class Activator implements BundleActivator {
     private Scanner scanner = new Scanner(System.in);
+    private List<String> conversionHistory = new ArrayList<>();
 
     @Override
     public void start(BundleContext context) throws Exception {
@@ -23,6 +26,7 @@ public class Activator implements BundleActivator {
             System.out.println("1. Length");
             System.out.println("2. Weight");
             System.out.println("3. Temperature");
+            System.out.println("4. View Conversion History");
             System.out.println("q. Quit");
             System.out.print("Enter your choice: ");
             String choice = scanner.nextLine();
@@ -36,6 +40,9 @@ public class Activator implements BundleActivator {
                     break;
                 case "3":
                     performConversion(context, "temperature");
+                    break;
+                case "4":
+                    displayHistory();
                     break;
                 case "q":
                     running = false;
@@ -70,10 +77,25 @@ public class Activator implements BundleActivator {
 
             // Perform conversion
             double result = converter.convert(value, sourceUnit, targetUnit);
-            System.out.println(value + " " + sourceUnit + " = " + result + " " + targetUnit);
+            String conversionEntry = value + " " + sourceUnit + " = " + result + " " + targetUnit;
+            System.out.println(conversionEntry);
+
+            // Store in history
+            conversionHistory.add(unitType + " Conversion: " + conversionEntry);
 
         } catch (Exception e) {
             System.out.println("Error during conversion: " + e.getMessage());
+        }
+    }
+
+    private void displayHistory() {
+        if (conversionHistory.isEmpty()) {
+            System.out.println("No conversions have been performed yet.");
+        } else {
+            System.out.println("\nConversion History:");
+            for (String entry : conversionHistory) {
+                System.out.println(entry);
+            }
         }
     }
 
