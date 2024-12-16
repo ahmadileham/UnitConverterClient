@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: UnitConverterClient
+Bundle-SymbolicName: UnitConverterClient
+Bundle-Version: 1.0.0
+Import-Package: com.converter.service, org.osgi.framework
+Bundle-RequiredExecutionEnvironment: JavaSE-23
+Bundle-Activator: com.client.Activator
